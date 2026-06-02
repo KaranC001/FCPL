@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finnovative Consulting - Premium Interactive Whiteboard Concept</title>
+    
+    <!-- Google Fonts: Combining Ultra-Clean Sans for high readability with Handdrawn Marker accents -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Patrick+Hand&family=Permanent+Marker&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Marker/Doodle Styled Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --ink-navy: #0f172a;
+            --marker-blue: #2563eb;
+            --marker-red: #dc2626;
+            --marker-green: #16a34a;
+            --marker-gold: #b45309;
+            --board-offwhite: #f8fafc;
+            --grid-line: rgba(148, 163, 184, 0.15);
+        }
+
+        body {
+            background-color: #0f172a; /* Dark sleek background highlighting the virtual whiteboard frame */
+            font-family: 'Inter', sans-serif;
+            color: var(--ink-navy);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Whiteboard grid backdrop replication */
+        .whiteboard-surface {
+            background-color: var(--board-offwhite);
+            background-image: 
+                linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+            background-size: 30px 30px;
+            position: relative;
+        }
+
+        /* Marker & Handdrawn font classes */
+        .sketch-font {
+            font-family: 'Patrick Hand', cursive;
+        }
+        .sketch-aside {
+            font-family: 'Caveat', cursive;
+        }
+        .sketch-title {
+            font-family: 'Architects Daughter', sans-serif;
+        }
+        .marker-font {
+            font-family: 'Permanent Marker', cursive;
+        }
+
+        /* Professional yet handcrafted sketch cards */
+        .sketch-card {
+            background: #ffffff;
+            border: 2px solid var(--ink-navy);
+            border-radius: 12px 16px 12px 14px / 14px 12px 16px 12px;
+            box-shadow: 4px 5px 0px var(--ink-navy);
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .sketch-card:hover {
+            transform: translate(-1px, -2px) rotate(0.3deg);
+            box-shadow: 6px 7px 0px var(--ink-navy);
+        }
+
+        /* Polished Post-it sticky notes */
+        .sticky-note {
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            box-shadow: 3px 6px 12px rgba(15, 23, 42, 0.06);
+            border-radius: 4px;
+            transform: rotate(-1deg);
+            transition: all 0.2s ease-in-out;
+        }
+        .sticky-note:nth-child(even) {
+            transform: rotate(1.2deg);
+        }
+        .sticky-note:hover {
+            transform: scale(1.04) rotate(0deg);
+            box-shadow: 6px 12px 18px rgba(15, 23, 42, 0.1);
+            z-index: 20;
+        }
+
+        /* Realistic paper tape */
+        .paper-tape {
+            background: rgba(254, 240, 138, 0.7);
+            border-left: 1px dashed rgba(0, 0, 0, 0.1);
+            border-right: 1px dashed rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transform: rotate(-2.5deg);
+        }
+
+        /* Highlighter markers */
+        .highlighter-highlight {
+            background: linear-gradient(104deg, rgba(254, 240, 138, 0.15) 0%, rgba(254, 240, 138, 0.85) 15%, rgba(254, 240, 138, 0.8) 85%, rgba(254, 240, 138, 0.15) 100%);
+            border-radius: 4px;
+            padding: 1px 4px;
+        }
+        .highlighter-blue {
+            background: linear-gradient(104deg, rgba(191, 219, 254, 0.15) 0%, rgba(191, 219, 254, 0.85) 15%, rgba(191, 219, 254, 0.8) 85%, rgba(191, 219, 254, 0.15) 100%);
+        }
+        .highlighter-green {
+            background: linear-gradient(104deg, rgba(187, 247, 208, 0.15) 0%, rgba(187, 247, 208, 0.85) 15%, rgba(187, 247, 208, 0.8) 85%, rgba(187, 247, 208, 0.15) 100%);
+        }
+
+        /* Interactive slide manager */
+        .slide-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 45px 75px 45px;
+            transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform: scale(0.985);
+        }
+        .slide-frame.active-slide {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+
+        /* Drawing canvas layer overlaying content */
+        #sketchpad {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 50;
+            pointer-events: none;
+            cursor: crosshair;
+        }
+
+        /* Ledge pen drawer styling */
+        .ledge-tray {
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #e2e8f0;
+            border: 2px solid #cbd5e1;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            height: 38px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05), 0 -2px 8px rgba(0,0,0,0.06);
+        }
+
+        .pen-marker {
+            width: 12px;
+            height: 60px;
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            bottom: 20px;
+            box-shadow: 1px 3px 5px rgba(0,0,0,0.12);
+        }
+        .pen-marker::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 3px 3px 0 0;
+        }
+        .pen-marker.selected {
+            transform: translateY(-10px) rotate(-4deg);
+            filter: brightness(1.1);
+            box-shadow: 3px 6px 10px rgba(0,0,0,0.2);
+        }
+
+        .color-black { background: #0f172a; }
+        .color-blue { background: #2563eb; }
+        .color-red { background: #dc2626; }
+        .color-highlighter { background: #fef08a; width: 16px; }
+
+        .toast-banner {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast-banner.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .ai-chat-panel {
+            transform: translateY(20px) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom right;
+        }
+        .ai-chat-panel.active {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .ai-message {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background-color: currentColor;
+            border-radius: 50%;
+            margin: 0 1px;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 select-none">
+
+    <div id="toastNotification" class="toast-banner px-5 py-3 bg-slate-900 text-white rounded-lg shadow-xl font-medium text-sm flex items-center gap-3">
+        <i class="fa-solid fa-wand-magic-sparkles text-yellow-300"></i>
+        <span id="toastMessage">Whiteboard dynamic simulation ready.</span>
+    </div>
+
+    <!-- MAIN CHASSIS FRAME (Locked to 16:9 Standard Presentation Aspect Ratio 1280x720) -->
+    <div class="relative w-[1280px] h-[720px] bg-white border-[12px] border-slate-700 rounded-lg shadow-2xl flex flex-col overflow-hidden whiteboard-surface">
+        
+        <!-- Sketch overlay canvas layer -->
+        <canvas id="sketchpad" width="1256" height="696"></canvas>
+
+        <div class="slide-frame active-slide" id="slide-0-cover">
+            <div class="w-full h-full flex flex-col justify-between px-10 py-8 relative">
+                
+                <!-- TOP: Profile Tag & Decorative Backgrounds -->
+                <div class="flex flex-col items-center pt-2">
+                    <!-- Decorative Elements -->
+                    <svg class="absolute top-8 left-12 w-24 h-24 opacity-20" viewBox="0 0 100 100">
+                        <path d="M10,50 Q30,20 50,50 T90,50" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="5,5" />
+                        <circle cx="90" cy="50" r="4" fill="#2563eb" />
+                    </svg>
+                    <div class="absolute bottom-32 right-16 w-40 h-40 bg-yellow-100 rounded-full opacity-50 blur-3xl"></div>
+                    <div class="absolute top-16 right-20 text-slate-300 text-5xl opacity-20"><i class="fa-solid fa-quote-right"></i></div>
+
+                    <!-- Profile Tag -->
+                    <div class="relative mb-4">
+                        <span class="sketch-aside text-2xl text-rose-600 font-bold italic rotate-[-3deg] inline-block">Company Profile . 2026</span>
+                        <svg class="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 100 20" preserveAspectRatio="none">
+                            <path d="M5,15 Q50,5 95,15" fill="none" stroke="#fef08a" stroke-width="12" stroke-linecap="round" opacity="0.6" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- MIDDLE: Core Titles & Floating Domain Notes -->
+                <div class="relative flex items-center justify-center flex-grow w-full my-2">
+                    
+                    <!-- Left Note - Pinned firmly to the edge -->
+                    <div class="absolute left-2 z-20">
+                        <div class="sticky-note bg-blue-50/90 pr-6 pl-4 py-3 border border-blue-200 flex items-center gap-3 whitespace-nowrap shadow-sm">
+                            <div class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 text-sm"><i class="fa-solid fa-chart-line"></i></div>
+                            <span class="font-bold text-slate-800 text-lg">Consulting Domain</span>
+                        </div>
+                    </div>
+
+                    <!-- Center Title Block - Restricted width prevents colliding with side notes -->
+                    <div class="flex flex-col items-center justify-center text-center z-10 px-4 max-w-[700px]">
+                        <h1 class="text-[5.5rem] font-extrabold text-slate-900 leading-none tracking-tight uppercase marker-font whitespace-nowrap">
+                            Finnovative
+                        </h1>
+                        <h2 class="flex items-center justify-center gap-4 text-xl font-bold text-slate-500 tracking-[0.25em] uppercase mt-3">
+                            <span>Consulting</span>
+                            <span class="text-slate-300 font-light text-2xl pb-1">|</span>
+                            <span>Pvt Ltd</span>
+                        </h2>
+
+                        <!-- Squiggly Divider -->
+                        <svg class="w-32 h-4 my-5" viewBox="0 0 100 20">
+                            <path d="M0,10 Q10,0 20,10 T40,10 T60,10 T80,10 T100,10" fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+
+                        <p class="text-[1.6rem] text-slate-800 font-bold sketch-title leading-snug">
+                            Integrated Financial Advisory for Finance Leaders
+                        </p>
+                    </div>
+
+                    <!-- Right Note - Pinned firmly to the edge -->
+                    <div class="absolute right-2 z-20">
+                        <div class="sticky-note bg-emerald-50/90 pr-6 pl-4 py-3 border border-emerald-200 flex items-center gap-3 whitespace-nowrap shadow-sm" style="transform: rotate(1.5deg);">
+                            <div class="w-8 h-8 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-700 text-sm"><i class="fa-solid fa-scale-balanced"></i></div>
+                            <span class="font-bold text-slate-800 text-lg">Advisory Domain</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- BOTTOM: Footer Contact Strip -->
+                <div class="w-full mt-4">
+                    <div class="sketch-card bg-white p-4 w-full flex justify-between items-center text-[13px] font-medium text-slate-700">
+                        <div class="flex items-center gap-6">
+                            <span class="flex items-center gap-2 hover:text-rose-600 transition-colors"><div class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-location-dot text-[10px]"></i></div> New Delhi, India</span>
+                            <span class="flex items-center gap-2 hover:text-indigo-600 transition-colors"><div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-envelope text-[10px]"></i></div> fcpl@fcplco.com</span>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <span class="flex items-center gap-2 hover:text-emerald-600 transition-colors"><div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-phone text-[10px]"></i></div> +91 99107 43612</span>
+                            <span class="flex items-center gap-2 hover:text-blue-600 transition-colors"><div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fa-brands fa-linkedin-in text-[10px]"></i></div> linkedin.com/company/finnovative</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="slide-frame" id="slide-1">
+            <!-- Header section of cover -->
+            <div class="flex justify-between items-start border-b-2 border-dashed border-slate-300 pb-4">
+                <div class="flex items-center gap-3">
+                    <!-- Clean, sketchy virtual logo mark -->
+                    <div class="relative w-11 h-11 flex items-center justify-center bg-slate-900 text-white rounded-lg border-2 border-slate-950 shadow-[3px_3px_0px_rgba(15,23,42,1)] flex-shrink-0">
+                        <svg viewBox="0 0 100 100" class="w-7 h-7 stroke-white stroke-[8] fill-none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M 30 80 L 30 20 L 75 20" />
+                            <path d="M 30 48 L 65 48" />
+                            <path d="M 50 80 L 65 65 L 80 80" stroke-width="6" />
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-extrabold text-xl text-slate-900 leading-none tracking-tight">Finnovative</span>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1">Consulting</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="sketch-aside text-2xl text-rose-600 font-bold italic rotate-[-2deg] mr-2">* Click folders on Slide 2 to toggle domains!</span>
+                </div>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="grid grid-cols-12 gap-6 mt-6 flex-grow">
+                <!-- Left Main Title and Core Philosophy -->
+                <div class="col-span-7 flex flex-col justify-between pr-4">
+                    <div>
+                        <h1 class="text-4xl font-extrabold text-slate-900 leading-tight tracking-tight">
+                            Integrated <span class="highlighter-highlight">Financial Advisory</span> <br>
+                            for Modern Finance Leaders
+                        </h1>
+                        <p class="text-base text-slate-600 mt-4 leading-relaxed font-normal">
+                            Finnovative Consulting brings together multi-disciplinary Chartered Accountants trained at <span class="highlighter-blue px-1.5 py-0.5 rounded font-semibold">Deloitte, EY, BDO</span>, and leading Indian firms. We combine institutional rigor with the client-centric focus of a specialized practice.
+                        </p>
+                    </div>
+
+                    <!-- Lined Paper Style Quote Board -->
+                    <div class="bg-yellow-50/50 border border-amber-200 rounded-lg p-4 mt-4 relative">
+                        <div class="paper-tape absolute -top-2.5 left-8 w-16 h-4"></div>
+                        <p class="sketch-aside text-xl text-slate-800 leading-normal font-semibold">
+                            "Our Consulting and Advisory streams talk to each other seamlessly. No silos, no regulatory gaps — enabling promoter-driven teams to scale with confidence."
+                        </p>
+                    </div>
+
+                    <!-- Slide Footer Contact Stripe -->
+                    <div class="flex gap-4 text-xs text-slate-500 font-medium border-t border-dashed border-slate-200 pt-3">
+                        <span><i class="fa-solid fa-building text-slate-400 mr-1.5"></i>New Delhi Hub</span>
+                        <span><i class="fa-solid fa-envelope text-slate-400 mr-1.5"></i>fcpl@fcplco.com</span>
+                        <span><i class="fa-solid fa-phone text-slate-400 mr-1.5"></i>+91 99107 43612</span>
+                    </div>
+                </div>
+
+                <!-- Right Hand-Drawn Styled Sticky Note Board -->
+                <div class="col-span-5 grid grid-cols-2 gap-4">
+                    <!-- Note 1 -->
+                    <div class="sticky-note bg-indigo-50/70 p-4 border border-indigo-200 flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-indigo-700 tracking-wider uppercase block mb-1">Advantage 01</span>
+                            <h4 class="font-bold text-slate-800 text-base mb-1.5">Big 4 Trained</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed font-normal">Elite professional methodologies executed with localized agility.</p>
+                        </div>
+                    </div>
+
+                    <!-- Note 2 -->
+                    <div class="sticky-note bg-rose-50/70 p-4 border border-rose-200 flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-rose-700 tracking-wider uppercase block mb-1">Advantage 02</span>
+                            <h4 class="font-bold text-slate-800 text-base mb-1.5">Promoter Focused</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed font-normal">Purpose-built frameworks engineered directly for CFOs and founders.</p>
+                        </div>
+                    </div>
+
+                    <!-- Note 3 -->
+                    <div class="sticky-note bg-emerald-50/70 p-4 border border-emerald-200 flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-emerald-700 tracking-wider uppercase block mb-1">Advantage 03</span>
+                            <h4 class="font-bold text-slate-800 text-base mb-1.5">Dual-Domain Hub</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed font-normal">Connected systems handling transformations alongside tax & regulatory paths.</p>
+                        </div>
+                    </div>
+
+                    <!-- Note 4 -->
+                    <div class="sticky-note bg-amber-50/70 p-4 border border-amber-200 flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-amber-700 tracking-wider uppercase block mb-1">Advantage 04</span>
+                            <h4 class="font-bold text-slate-800 text-base mb-1.5">Real Deployment</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed font-normal">We stay through standard deployment. No static PDF-only consulting.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-frame" id="slide-2">
+            <!-- Header controls containing domain folders -->
+            <div class="flex justify-between items-center border-b border-slate-300 pb-3">
+                <div>
+                    <span class="text-xs bg-slate-100 text-slate-600 border border-slate-300 font-bold px-3 py-1 rounded-full uppercase tracking-wider">Slide 02 . Ecosystem Map</span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Dual-Domain Services Matrix</h2>
+                </div>
+
+                <!-- Folders Navigation -->
+                <div class="flex gap-2 bg-slate-200/50 p-1.5 rounded-lg border border-slate-300">
+                    <button onclick="toggleServiceLayout('consulting')" id="tab-consulting" class="px-4 py-2 border border-slate-800 rounded-md font-bold text-xs bg-slate-800 text-white shadow-sm transition-all duration-200">
+                        📂 Domain A: Consulting Practice
+                    </button>
+                    <button onclick="toggleServiceLayout('advisory')" id="tab-advisory" class="px-4 py-2 border border-transparent rounded-md font-bold text-xs bg-transparent text-slate-600 hover:text-slate-900 transition-all duration-200">
+                        📂 Domain B: Regulatory Advisory
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area mapping both domains -->
+            <div class="relative flex-grow mt-5">
+                
+                <!-- CONSULTING DOMAIN -->
+                <div id="deck-consulting" class="absolute inset-0 grid grid-cols-3 gap-6 transition-all duration-300 transform scale-100 opacity-100 pointer-events-auto">
+                    <!-- Column A1 -->
+                    <div class="sketch-card p-5 bg-white flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2.5 mb-3.5">
+                                <span class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><i class="fa-solid fa-chart-line text-sm"></i></span>
+                                <h3 class="text-lg font-bold text-slate-800">Finance Transformation</h3>
+                            </div>
+                            <ul class="space-y-3 text-sm text-slate-600">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-blue-500 font-bold">▸</span>
+                                    <span>Finance Operating Model design (R2R, P2P, O2C)</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-blue-500 font-bold">▸</span>
+                                    <span>ERP deployment support: Zoho, Tally, SAP (SME focused)</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-blue-500 font-bold">▸</span>
+                                    <span>Technical Accounting (Ind AS / IFRS) ongoing adoption</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-blue-500 font-bold">▸</span>
+                                    <span>Finance Shared Services setup & reporting architecture</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="text-xs bg-blue-50 p-2.5 rounded-md border border-dashed border-blue-300 font-medium text-blue-800 mt-2">
+                            <span class="font-bold">Highlight:</span> Structured migration for mid-market scale promoters.
+                        </div>
+                    </div>
+
+                    <!-- Column A2 -->
+                    <div class="sketch-card p-5 bg-white flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2.5 mb-3.5">
+                                <span class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><i class="fa-solid fa-compass text-sm"></i></span>
+                                <h3 class="text-lg font-bold text-slate-800">Strategy Consulting</h3>
+                            </div>
+                            <ul class="space-y-3 text-sm text-slate-600">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-500 font-bold">▸</span>
+                                    <span>Commercially grounded financial models & feasibility</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-500 font-bold">▸</span>
+                                    <span>Outsourced CFO office: Budgeting, Forecasting, Cash MIS</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-500 font-bold">▸</span>
+                                    <span>Corporate restructuring & promoter equity allocation</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-500 font-bold">▸</span>
+                                    <span>Process re-engineering & organizational optimization</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="text-xs bg-amber-50 p-2.5 rounded-md border border-dashed border-amber-300 font-medium text-amber-800 mt-2">
+                            <span class="font-bold">Target:</span> Bridging operational finance with C-suite vision.
+                        </div>
+                    </div>
+
+                    <!-- Column A3 -->
+                    <div class="sketch-card p-5 bg-white flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2.5 mb-3.5">
+                                <span class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fa-solid fa-shield-halved text-sm"></i></span>
+                                <h3 class="text-lg font-bold text-slate-800">Risk & Controls</h3>
+                            </div>
+                            <ul class="space-y-3 text-sm text-slate-600">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-emerald-500 font-bold">▸</span>
+                                    <span>Internal Audit planning: Co-sourcing & full outsourcing</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-emerald-500 font-bold">▸</span>
+                                    <span>Internal Financial Controls (IFC) Companies Act 2013</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-emerald-500 font-bold">▸</span>
+                                    <span>SOP development, RACM design, & governance reviews</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-emerald-500 font-bold">▸</span>
+                                    <span>SOX compliance setup for US/Global parent subsidiaries</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="text-xs bg-emerald-50 p-2.5 rounded-md border border-dashed border-emerald-300 font-medium text-emerald-800 mt-2">
+                            <span class="font-bold">Compliance:</span> Direct defense frameworks aligned to auditing bodies.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADVISORY DOMAIN -->
+                <div id="deck-advisory" class="absolute inset-0 grid grid-cols-3 gap-6 transition-all duration-300 transform scale-95 opacity-0 pointer-events-none">
+                    <!-- Column B1 -->
+                    <div class="sketch-card p-5 bg-white flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2.5 mb-3.5">
+                                <span class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600"><i class="fa-solid fa-scale-balanced text-sm"></i></span>
+                                <h3 class="text-lg font-bold text-slate-800">Taxation & FEMA</h3>
+                            </div>
+                            <ul class="space-y-3 text-sm text-slate-600">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-rose-500 font-bold">▸</span>
+                                    <span>Corporate tax strategy, direct audit filings, & compliance</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-rose-500 font-bold">▸</span>
+                                    <span>GST litigation, compliance workflows, & departmental audits</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-rose-500 font-bold">▸</span>
+                                    <span>FDI & ODI cross-border structured RBI reporting pathways</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-rose-500 font-bold">▸</span>
+                                    <span>Compounding applications, ECB advisory, & regularizations</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="text-xs bg-rose-50 p-2.5 rounded-md border border-dashed border-rose-300 font-medium text-rose-800 mt-2">
+                            <span class="font-bold">Forums:</span> Active CIT(A), ITAT, GST Authorities representation.
+                        </div>
+                    </div>
+
+                    <!-- Column B2 -->
+                    <div class="sketch-card p-5 bg-white flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2.5 mb-3.5">
+                                <span class="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600"><i class="fa-solid fa-handshake text-sm"></i></span>
+                                <h3 class="text-lg font-bold text-slate-800">Transaction Advisory</h3>
+                            </div>
+                            <ul class="space-y-3 text-sm text-slate-600">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-sky-500 font-bold">▸</span>
+                                    <span>M&A transaction due diligence (Buy-side / Sell-side)</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-sky-500 font-bold">▸</span>
+                                    <span>Securities & Enterprise valuation: DCF, Multiples, Asset</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-sky-500 font-bold">▸</span>
+                                    <span>Structured deal flow mechanics and capital alignment</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-sky-500 font-bold">▸</span>
+                                    <span>Equity support documentation: CCDs, SAFEs, CCPS schedules</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="text-xs bg-sky-50 p-2.5 rounded-md border border-dashed border-sky-300 font-medium text-sky-800 mt-2">
+                            <span class="font-bold">Credentials:</span> IBBI Registered Valuer framework designs.
+                        </div>
+                    </div>
+
+                    <!-- Column B3 -->
+                    <div class="sketch-card p-5 bg-white flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2.5 border-b border-slate-200 pb-2.5 mb-3.5">
+                                <span class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600"><i class="fa-solid fa-leaf text-sm"></i></span>
+                                <h3 class="text-lg font-bold text-slate-800">Startup & ESG</h3>
+                            </div>
+                            <ul class="space-y-3 text-sm text-slate-600">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">▸</span>
+                                    <span>Frictionless Day-1 entity setup & structural compliance</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">▸</span>
+                                    <span>ESG Board Level Policy & ESG Due Diligence support</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">▸</span>
+                                    <span>Business Responsibility & Sustainability Reporting (BRSR)</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-teal-500 font-bold">▸</span>
+                                    <span>Promoter estate, family trusts, & succession governance</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="text-xs bg-teal-50 p-2.5 rounded-md border border-dashed border-teal-300 font-medium text-teal-800 mt-2">
+                            <span class="font-bold">Sustainability:</span> Aligned with GRI, SASB, SEBI requirements.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="slide-frame" id="slide-3">
+            <div class="flex justify-between items-start border-b border-slate-300 pb-3">
+                <div>
+                    <span class="text-xs bg-rose-50 text-rose-700 border border-rose-300 font-bold px-3 py-1 rounded-full uppercase tracking-wider">Slide 03 . Leadership Board</span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Founding Partners & Scale Metrics</h2>
+                </div>
+                <div class="sketch-aside text-slate-500 text-lg font-bold">
+                    * Click on partners below to inspect core specialization panels
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-5 mt-5 flex-grow">
+                <!-- Left half: Partners carousel visualizer -->
+                <div class="col-span-8 flex flex-col justify-between">
+                    <!-- Partner Selection strip -->
+                    <div class="grid grid-cols-5 gap-3">
+                        <button onclick="selectFounder(1)" id="f-tab-1" class="sketch-card p-2 bg-white flex flex-col justify-center items-center text-center outline-none border-2 border-slate-900 ring-2 ring-indigo-500/20">
+                            <div class="relative w-12 h-12 rounded-full border border-slate-300 overflow-hidden bg-slate-600 flex items-center justify-center">
+                                <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">PV</span>
+                                <img src="PV.jpeg" class="relative z-10 w-full h-full object-cover" alt="Paras" onerror="this.style.display='none'">
+                            </div>
+                            <span class="text-[12px] font-bold text-slate-800 mt-1.5 leading-none block">PV</span>
+                            <span class="text-[10px] text-slate-400 font-semibold block leading-tight">11+ Yrs</span>
+                        </button>
+
+                        <button onclick="selectFounder(2)" id="f-tab-2" class="sketch-card p-2 bg-slate-50 flex flex-col justify-center items-center text-center opacity-70 hover:opacity-100">
+                            <div class="relative w-12 h-12 rounded-full border border-slate-300 overflow-hidden bg-slate-600 flex items-center justify-center">
+                                <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">NJ</span>
+                            </div>
+                            <span class="text-[12px] font-bold text-slate-800 mt-1.5 leading-none block">NJ</span>
+                            <span class="text-[10px] text-slate-400 font-semibold block leading-tight">13+ Yrs</span>
+                        </button>
+
+                        <button onclick="selectFounder(3)" id="f-tab-3" class="sketch-card p-2 bg-slate-50 flex flex-col justify-center items-center text-center opacity-70 hover:opacity-100">
+                            <div class="relative w-12 h-12 rounded-full border border-slate-300 overflow-hidden bg-slate-600 flex items-center justify-center">
+                                <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">KC</span>
+                                <img src="KC.jpg" class="relative z-10 w-full h-full object-cover" alt="Karan" onerror="this.style.display='none'">
+                            </div>
+                            <span class="text-[12px] font-bold text-slate-800 mt-1.5 leading-none block">KC</span>
+                            <span class="text-[10px] text-slate-400 font-semibold block leading-tight">7+ Yrs</span>
+                        </button>
+
+                        <button onclick="selectFounder(4)" id="f-tab-4" class="sketch-card p-2 bg-slate-50 flex flex-col justify-center items-center text-center opacity-70 hover:opacity-100">
+                            <div class="relative w-12 h-12 rounded-full border border-slate-300 overflow-hidden bg-slate-600 flex items-center justify-center">
+                                <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">SK</span>
+                                <img src="SK.jpeg" class="relative z-10 w-full h-full object-cover" alt="Sitin" onerror="this.style.display='none'">
+                            </div>
+                            <span class="text-[12px] font-bold text-slate-800 mt-1.5 leading-none block">SK</span>
+                            <span class="text-[10px] text-slate-400 font-semibold block leading-tight">5+ Yrs</span>
+                        </button>
+
+                        <button onclick="selectFounder(5)" id="f-tab-5" class="sketch-card p-2 bg-slate-50 flex flex-col justify-center items-center text-center opacity-70 hover:opacity-100">
+                            <div class="relative w-12 h-12 rounded-full border border-slate-300 overflow-hidden bg-slate-600 flex items-center justify-center">
+                                <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">AA</span>
+                                <img src="AA.jpeg" class="relative z-10 w-full h-full object-cover" alt="Aditya" onerror="this.style.display='none'">
+                            </div>
+                            <span class="text-[12px] font-bold text-slate-800 mt-1.5 leading-none block">AA</span>
+                            <span class="text-[10px] text-slate-400 font-semibold block leading-tight">10+ Yrs</span>
+                        </button>
+                    </div>
+
+                    <!-- Dynamic Founder Bio Panel (Styled as notebook memo card) -->
+                    <div class="bg-white border-2 border-slate-800 rounded-xl p-5 mt-4 shadow-md flex-grow flex gap-4 items-center">
+                        <!-- Profile Left Details -->
+                        <div class="w-2/3">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h4 id="founder-name" class="text-xl font-extrabold text-slate-900">CA Paras Vig</h4>
+                                <span class="bg-indigo-100 text-indigo-800 text-[11px] font-bold uppercase px-2 py-0.5 rounded border border-indigo-200">Founder & Advisor</span>
+                            </div>
+                            <p id="founder-subtitle" class="text-xs font-bold text-rose-600 uppercase tracking-wider mb-2">Transformation & ESG Specialists</p>
+                            <p id="founder-bio" class="text-xs text-slate-600 leading-relaxed font-normal">
+                                Paras specializes in system integrations, cross-border transactional parameters, and SEBI-aligned ESG frameworks. Having built robust governance programs across mid-market and multinational ventures, he acts as an integrated coordinator between CFO hubs and strategic boards.
+                            </p>
+                        </div>
+                        <!-- Profile Highlights -->
+                        <div class="w-1/3 bg-slate-50 p-4 border border-slate-200 rounded-lg flex flex-col justify-between h-full">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Specializations</span>
+                                <div id="founder-highlights" class="space-y-1 mt-1.5">
+                                    <span class="text-xs font-medium text-slate-700 block">✓ ERP Integrations (Zoho/SAP)</span>
+                                    <span class="text-xs font-medium text-slate-700 block">✓ FDI / ODI Restructuring</span>
+                                    <span class="text-xs font-medium text-slate-700 block">✓ BRSR Sustainability Models</span>
+                                </div>
+                            </div>
+                            <span id="founder-years" class="text-xl font-bold text-slate-800 tracking-tight block mt-3">11+ Yrs Exp</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right half: Professional Whiteboard Statistics -->
+                <div class="col-span-4 flex flex-col justify-between">
+                    <div class="sketch-card bg-[#fffbeb] p-5 flex flex-col justify-between flex-grow">
+                        <!-- Lined spirals on notepad header -->
+                        <div class="flex justify-between border-b border-amber-200 pb-2.5 mb-3.5">
+                            <span class="text-xs font-extrabold text-amber-800 uppercase tracking-widest"><i class="fa-solid fa-calculator mr-1"></i> Firm Scale</span>
+                            <span class="text-xs font-bold text-slate-400 font-mono">FCPL / 2026</span>
+                        </div>
+
+                        <!-- Metrics Grid -->
+                        <div class="grid grid-cols-2 gap-3.5 flex-grow">
+                            <div class="bg-white/75 p-3 rounded-md border border-slate-200 text-center flex flex-col justify-center">
+                                <span class="text-2xl font-extrabold text-slate-900 block leading-tight">20+</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Team Members</span>
+                            </div>
+                            <div class="bg-white/75 p-3 rounded-md border border-slate-200 text-center flex flex-col justify-center">
+                                <span class="text-2xl font-extrabold text-slate-900 block leading-tight">13+ Yrs</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Lead Experience</span>
+                            </div>
+                            <div class="bg-white/75 p-3 rounded-md border border-slate-200 text-center flex flex-col justify-center">
+                                <span class="text-2xl font-extrabold text-slate-900 block leading-tight">50+</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Litigation Matters</span>
+                            </div>
+                            <div class="bg-white/75 p-3 rounded-md border border-slate-200 text-center flex flex-col justify-center">
+                                <span class="text-2xl font-extrabold text-slate-900 block leading-tight">1k+</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Hours Saved</span>
+                            </div>
+                        </div>
+
+                        <!-- Mini list of technologies (ERP/Accounting platforms) -->
+                        <div class="mt-4 border-t border-dashed border-amber-200 pt-3">
+                            <span class="text-[10px] font-extrabold uppercase text-amber-900 tracking-wider block mb-1.5">Direct ERP Tech Integration Stack:</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-semibold">SAP S/4</span>
+                                <span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-semibold">NetSuite</span>
+                                <span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-semibold">Zoho Books</span>
+                                <span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-semibold">Tally Prime</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-frame" id="slide-4">
+            <div class="flex justify-between items-start border-b border-slate-300 pb-3">
+                <div>
+                    <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold px-3 py-1 rounded-full uppercase tracking-wider">Slide 04 . Network & Reach</span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Cross-Border Footprint & Connect</h2>
+                </div>
+                <div class="sketch-aside text-emerald-600 text-xl font-bold italic rotate-[-1.5deg]">
+                    * Hover and inspect mapped global corridors!
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-6 mt-5 flex-grow">
+                <!-- Left Hand-Drawn Global Connections map -->
+                <div class="col-span-7 sketch-card bg-slate-50 relative flex flex-col justify-between p-5 overflow-hidden">
+                    <div>
+                        <span class="text-xs bg-indigo-100 text-indigo-800 font-bold tracking-wider px-2.5 py-1 rounded uppercase">Global Reach Channels</span>
+                        <p class="text-xs text-slate-500 mt-1.5">We construct direct legal & compliance pathways across strategic corridors.</p>
+                    </div>
+
+                    <!-- Custom Clean Inline SVG world map nodes vector -->
+                    <div class="flex-grow flex items-center justify-center relative my-2">
+                        <svg width="100%" height="160" viewBox="0 0 500 200" fill="none" class="opacity-95">
+                            <!-- Global connection lines representing corridors -->
+                            <path d="M 60 100 Q 150 40 250 110" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4"></path>
+                            <path d="M 250 110 Q 350 40 440 90" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4"></path>
+                            <path d="M 180 50 Q 250 110 320 50" stroke="#c5a85c" stroke-width="1.2" stroke-dasharray="3 3"></path>
+
+                            <!-- Node: USA -->
+                            <circle cx="60" cy="100" r="10" fill="#dc2626" fill-opacity="0.1" class="cursor-pointer" onclick="triggerToast('USA Corridor: FDI structured pathways')"></circle>
+                            <circle cx="60" cy="100" r="4.5" fill="#dc2626"></circle>
+                            <text x="60" y="118" font-family="'Caveat'" font-size="14" font-weight="bold" fill="#475569" text-anchor="middle">USA Hub</text>
+
+                            <!-- Node: UK -->
+                            <circle cx="180" cy="50" r="8" fill="#2563eb" fill-opacity="0.1" class="cursor-pointer" onclick="triggerToast('UK Corridor: Joint venture operations')"></circle>
+                            <circle cx="180" cy="50" r="3.5" fill="#2563eb"></circle>
+                            <text x="180" y="68" font-family="'Caveat'" font-size="13" font-weight="bold" fill="#475569" text-anchor="middle">United Kingdom</text>
+
+                            <!-- Node: India HQ -->
+                            <circle cx="250" cy="110" r="14" fill="#16a34a" fill-opacity="0.1" class="cursor-pointer" onclick="triggerToast('India Headquarters: Shahdara, New Delhi Operations Center')"></circle>
+                            <circle cx="250" cy="110" r="6" fill="#16a34a"></circle>
+                            <text x="250" y="132" font-family="'Caveat'" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="middle">Delhi HQ (India)</text>
+
+                            <!-- Node: UAE -->
+                            <circle cx="320" cy="50" r="8" fill="#b45309" fill-opacity="0.1" class="cursor-pointer" onclick="triggerToast('UAE Corridor: Multi-jurisdiction tax planning')"></circle>
+                            <circle cx="320" cy="50" r="3.5" fill="#b45309"></circle>
+                            <text x="320" y="68" font-family="'Caveat'" font-size="13" font-weight="bold" fill="#475569" text-anchor="middle">UAE/Dubai</text>
+
+                            <!-- Node: Singapore -->
+                            <circle cx="440" cy="90" r="10" fill="#2563eb" fill-opacity="0.1" class="cursor-pointer" onclick="triggerToast('Singapore Hub: Inbound & outbound ODI compliance protocols')"></circle>
+                            <circle cx="440" cy="90" r="4.5" fill="#2563eb"></circle>
+                            <text x="440" y="108" font-family="'Caveat'" font-size="14" font-weight="bold" fill="#475569" text-anchor="middle">Singapore</text>
+                        </svg>
+                    </div>
+
+                    <!-- Footprint Litigation Forums Strip -->
+                    <div class="border-t border-slate-200 pt-3">
+                        <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">Litigation Representation Forums:</span>
+                        <div class="flex gap-1.5 flex-wrap">
+                            <span class="text-[10px] bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-300">IT Appellate CIT(A)</span>
+                            <span class="text-[10px] bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-300">ITAT</span>
+                            <span class="text-[10px] bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-300">GST Authorities</span>
+                            <span class="text-[10px] bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-300">FEMA Compounding</span>
+                            <span class="text-[10px] bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-300">NCLT filings</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Connect Panel containing direct addresses -->
+                <div class="col-span-5 flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <!-- Card 1 Address -->
+                        <div class="sketch-card p-4 bg-white flex items-start gap-4 hover:-translate-x-1 duration-200">
+                            <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 flex-shrink-0"><i class="fa-solid fa-map-location-dot"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm leading-none mb-1">Office Location</h4>
+                                <p class="text-slate-500 text-xs leading-normal">627/13, 1st Floor, Main Loni Road, Shahdara, New Delhi – 110032</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 Digital outreach -->
+                        <div class="sketch-card p-4 bg-white flex items-start gap-4 hover:-translate-x-1 duration-200">
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0"><i class="fa-solid fa-envelope-open-text"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm leading-none mb-1">Primary Email Portal</h4>
+                                <p class="text-indigo-800 font-bold text-xs leading-none mt-1">fcpl@fcplco.com</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 LinkedIn Profile -->
+                        <div class="sketch-card p-4 bg-white flex items-start gap-4 hover:-translate-x-1 duration-200">
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0"><i class="fa-brands fa-linkedin-in"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm leading-none mb-1">LinkedIn Corporate Stream</h4>
+                                <p class="text-slate-500 text-xs leading-none mt-1">linkedin.com/company/finnovative-consulting-services</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer disclaimer -->
+                    <div class="text-[10px] text-slate-400 font-mono mt-4 leading-normal">
+                        © 2026 Finnovative Consulting Private Limited. All rights reserved.<br>
+                        This presentation is strictly confidential and designed for prospective clients.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= FIXED WHITEBOARD SLIDE NAV BAR ================= -->
+        <div class="h-[55px] border-t-2 border-slate-300 bg-slate-100 flex justify-between items-center px-6 z-[100] mt-auto">
+            <!-- Nav Bar Left info -->
+            <div class="flex items-center gap-3">
+                <span class="font-extrabold text-xs tracking-wider text-slate-400 uppercase">Interactive Pitch Deck</span>
+                <!-- Sketch draw mode toggle button -->
+                <button onclick="toggleFeltPen()" id="togglePenBtn" class="flex items-center gap-2 text-xs font-bold border border-slate-300 px-3 py-1 rounded-md hover:bg-slate-200 transition-all">
+                    <i id="togglePenIcon" class="fa-solid fa-pencil text-slate-500"></i>
+                    <span id="togglePenText">Draw Mode (Inactive)</span>
+                </button>
+            </div>
+
+            <!-- Nav Bar Right navigation control dot sets -->
+            <div class="flex items-center gap-6">
+                <div class="flex gap-2" id="navPoints">
+                    <button class="w-2.5 h-2.5 rounded-full border border-slate-400 bg-slate-700 active-indicator" onclick="jumpToScene(0)"></button>
+                    <button class="w-2.5 h-2.5 rounded-full border border-slate-400" onclick="jumpToScene(1)"></button>
+                    <button class="w-2.5 h-2.5 rounded-full border border-slate-400" onclick="jumpToScene(2)"></button>
+                    <button class="w-2.5 h-2.5 rounded-full border border-slate-400" onclick="jumpToScene(3)"></button>
+                    <button class="w-2.5 h-2.5 rounded-full border border-slate-400" onclick="jumpToScene(4)"></button>
+                </div>
+
+                <!-- Navigation buttons -->
+                <div class="flex gap-2.5 items-center">
+                    <button class="w-7 h-7 rounded-full border border-slate-400 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all shadow-sm" onclick="prevScene()"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                    <span class="font-mono text-xs font-bold text-slate-600 min-w-[40px] text-center" id="sceneIndicator">01 / 05</span>
+                    <button class="w-7 h-7 rounded-full border border-slate-400 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all shadow-sm" onclick="nextScene()"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DRY ERASE TRAY LEDGE (Bottom element holding pens) -->
+        <div class="ledge-tray">
+            <div id="pen-black" class="pen-marker color-black selected" onclick="pickPen('#0f172a', 3)" title="Black Dry-Erase Felt Marker"></div>
+            <div id="pen-blue" class="pen-marker color-blue" onclick="pickPen('#2563eb', 3)" title="Blue Highlight Board Marker"></div>
+            <div id="pen-red" class="pen-marker color-red" onclick="pickPen('#dc2626', 3)" title="Red Correction/Attention Felt Marker"></div>
+            <div id="pen-yellow" class="pen-marker color-highlighter" onclick="pickPen('rgba(254, 240, 138, 0.45)', 15)" title="Translucent Yellow Board Highlighter"></div>
+            <button class="text-[10px] font-bold uppercase text-slate-500 hover:text-rose-600 font-mono tracking-wider border-l border-slate-300 pl-4 transition-colors" onclick="wipeWhiteboard()">Clear Drawings</button>
+        </div>
+
+        <div class="absolute bottom-[75px] right-6 z-[200] flex flex-col items-end pointer-events-none">
+            
+            <!-- Chat Panel -->
+            <div id="aiChatPanel" class="ai-chat-panel sketch-card bg-white w-80 h-96 mb-4 flex flex-col overflow-hidden shadow-[8px_8px_0px_rgba(15,23,42,0.15)] border-2 border-slate-800">
+                <!-- Header -->
+                <div class="bg-indigo-50 border-b border-indigo-100 p-3 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 text-[10px]"><i class="fa-solid fa-robot"></i></div>
+                        <span class="font-bold text-slate-800 text-sm">FCPL Assistant</span>
+                    </div>
+                    <button onclick="toggleAIChat()" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <!-- Chat History Area -->
+                <div id="aiChatHistory" class="flex-grow p-3 overflow-y-auto flex flex-col gap-3 bg-slate-50 text-sm">
+                    <!-- Intro Message -->
+                    <div class="self-start bg-white border border-slate-200 rounded-lg rounded-tl-none p-2.5 max-w-[85%] shadow-sm ai-message">
+                        <p class="text-slate-700 leading-snug">Hi! I'm the Finnovative AI. Ask me anything about our partners, domains, or global footprint.</p>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-3 bg-white border-t border-slate-200 flex gap-2">
+                    <input type="text" id="aiChatInput" placeholder="Ask a question..." class="flex-grow bg-slate-100 border border-slate-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-500 focus:bg-white transition-colors" onkeypress="handleChatEnter(event)">
+                    <button onclick="sendChatMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white w-8 h-8 rounded-md flex items-center justify-center transition-colors shadow-sm shrink-0">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Floating Toggle Button -->
+            <button onclick="toggleAIChat()" class="pointer-events-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-full shadow-lg border-2 border-slate-700 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group">
+                <i class="fa-solid fa-sparkles text-yellow-400 group-hover:rotate-12 transition-transform"></i>
+                <span class="font-bold text-sm">Ask AI</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSceneIndex = 0;
+        const slides = document.querySelectorAll('.slide-frame');
+        const dots = document.querySelectorAll('#navPoints button');
+        const totalScenes = slides.length;
+        const sceneLabel = document.getElementById('sceneIndicator');
+
+        // Dynamic slides switcher
+        function renderScene() {
+            slides.forEach((slide, index) => {
+                if (index === currentSceneIndex) {
+                    slide.classList.add('active-slide');
+                } else {
+                    slide.classList.remove('active-slide');
+                }
+            });
+
+            dots.forEach((dot, index) => {
+                if (index === currentSceneIndex) {
+                    dot.style.background = '#0f172a';
+                } else {
+                    dot.style.background = 'transparent';
+                }
+            });
+
+            sceneLabel.innerText = `0${currentSceneIndex + 1} / 0${totalScenes}`;
+        }
+
+        function nextScene() {
+            if (currentSceneIndex < totalScenes - 1) {
+                currentSceneIndex++;
+                renderScene();
+            }
+        }
+
+        function prevScene() {
+            if (currentSceneIndex > 0) {
+                currentSceneIndex--;
+                renderScene();
+            }
+        }
+
+        function jumpToScene(index) {
+            currentSceneIndex = index;
+            renderScene();
+        }
+
+        // Add keyboard arrow keys support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextScene();
+            } else if (e.key === 'ArrowLeft') {
+                prevScene();
+            }
+        });
+
+        // Toggle service portfolio folders
+        function toggleServiceLayout(domain) {
+            const consultingDeck = document.getElementById('deck-consulting');
+            const advisoryDeck = document.getElementById('deck-advisory');
+            const tabConsulting = document.getElementById('tab-consulting');
+            const tabAdvisory = document.getElementById('tab-advisory');
+
+            if (domain === 'consulting') {
+                consultingDeck.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+                consultingDeck.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+                advisoryDeck.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+                advisoryDeck.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+
+                tabConsulting.className = "px-4 py-2 border border-slate-800 rounded-md font-bold text-xs bg-slate-800 text-white shadow-sm transition-all duration-200";
+                tabAdvisory.className = "px-4 py-2 border border-transparent rounded-md font-bold text-xs bg-transparent text-slate-600 hover:text-slate-900 transition-all duration-200";
+            } else {
+                advisoryDeck.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+                advisoryDeck.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+                consultingDeck.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+                consultingDeck.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+
+                tabAdvisory.className = "px-4 py-2 border border-slate-800 rounded-md font-bold text-xs bg-slate-800 text-white shadow-sm transition-all duration-200";
+                tabConsulting.className = "px-4 py-2 border border-transparent rounded-md font-bold text-xs bg-transparent text-slate-600 hover:text-slate-900 transition-all duration-200";
+            }
+        }
+
+        // Founders list dynamic bio data mapping
+        const founders = {
+            1: {
+                name: "CA Paras Vig",
+                subtitle: "Transformation & ESG Specialists",
+                bio: "Paras specializes in system integrations, cross-border transactional parameters, and SEBI-aligned ESG frameworks. Having built robust governance programs across mid-market and multinational ventures, he acts as an integrated coordinator between CFO hubs and strategic boards.",
+                highlights: [
+                    "✓ ERP Integrations (Zoho/SAP)",
+                    "✓ FDI / ODI Restructuring",
+                    "✓ BRSR Sustainability Models"
+                ],
+                years: "11+ Yrs Exp"
+            },
+            2: {
+                name: "CA Nitin Jain",
+                subtitle: "Tax Advisory & Litigation Advocate",
+                bio: "Nitin represents corporate interests across direct tax tribunals, appellate CIT(A) venues, and RBI compounding boards. Holding the DISA qualification alongside an IBBI Securities Valuation license, he addresses complex compliance structures with surgical tax precision.",
+                highlights: [
+                    "✓ direct & indirect litigation",
+                    "✓ Securities & FEMA Valuation",
+                    "✓ Corporate Structuring"
+                ],
+                years: "13+ Yrs Exp"
+            },
+            3: {
+                name: "CA Karan Chopra",
+                subtitle: "Process diagnostic & Digital Finance specialist",
+                bio: "Karan brings a wealth of advisory rigor honed during his tenure at Deloitte. He advises retail, technology, and manufacturing CFOs on deep-tier workflow diagnostics, technical Ind AS / IFRS compliance transitions, and robust automated MIS controls.",
+                highlights: [
+                    "✓ Deloitte Core Training",
+                    "✓ Technical Ind AS 116 Systems",
+                    "✓ High-Volume P2P / O2C diagnostics"
+                ],
+                years: "7+ Yrs Exp"
+            },
+            4: {
+                name: "CA Sitin K. Jain",
+                subtitle: "Internal Audit, Controls & Process Architect",
+                bio: "Sitin is a BDO-trained internal audit specialist. He works inside automobile, manufacturing, and hospitality complexes to map process audits, standard operating procedures, and Internal Financial Control (IFC) matrices mandated under Companies Act schedules.",
+                highlights: [
+                    "✓ BDO Network Methodology",
+                    "✓ Enterprise IFC Compliance Models",
+                    "✓ Risk-Based Audit Planning"
+                ],
+                years: "5+ Yrs Exp"
+            },
+            5: {
+                name: "Aditya Aggarwal",
+                subtitle: "Early Stage Startup compliance builder",
+                bio: "Aditya manages Indian financial practice across a broad landscape. Serving as a trusted advisor to dozens of early-stage startups and high-growth trading hubs, he coordinates bookkeeping infrastructure, GST reporting, and day-to-day statutory operations.",
+                highlights: [
+                    "✓ Indian GAAP expert",
+                    "✓ Multi-industry bookkeeping set",
+                    "✓ Day-1 startup readiness"
+                ],
+                years: "10+ Yrs Exp"
+            }
+        };
+
+        function selectFounder(id) {
+            // Update selected buttons styling
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`f-tab-${i}`);
+                if (i === id) {
+                    btn.className = "sketch-card p-2 bg-white flex flex-col justify-center items-center text-center outline-none border-2 border-slate-900 ring-2 ring-indigo-500/20";
+                } else {
+                    btn.className = "sketch-card p-2 bg-slate-50 flex flex-col justify-center items-center text-center opacity-70 hover:opacity-100";
+                }
+            }
+
+            // Update content elements with animations
+            const data = founders[id];
+            document.getElementById('founder-name').innerText = data.name;
+            document.getElementById('founder-subtitle').innerText = data.subtitle;
+            document.getElementById('founder-bio').innerText = data.bio;
+            document.getElementById('founder-years').innerText = data.years;
+
+            const highlightsBox = document.getElementById('founder-highlights');
+            highlightsBox.innerHTML = '';
+            data.highlights.forEach(hl => {
+                const span = document.createElement('span');
+                span.className = "text-xs font-medium text-slate-700 block";
+                span.innerText = hl;
+                highlightsBox.appendChild(span);
+            });
+        }
+
+        // ================= INTERACTIVE SKETCHPAD SIMULATION =================
+        const canvas = document.getElementById('sketchpad');
+        const ctx = canvas.getContext('2d');
+        let scribbleMode = false;
+        let drawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let markerColor = '#0f172a';
+        let markerWidth = 3;
+
+        // Auto sync canvas bounding box dimensions
+        function adjustCanvasBounds() {
+            canvas.width = 1256;
+            canvas.height = 641; // Restricts from bleeding into base slide navigator bar
+        }
+        adjustCanvasBounds();
+
+        // Switch scribble mode toggle
+        function toggleFeltPen() {
+            scribbleMode = !scribbleMode;
+            const btn = document.getElementById('togglePenBtn');
+            const icon = document.getElementById('togglePenIcon');
+            const text = document.getElementById('togglePenText');
+
+            if (scribbleMode) {
+                canvas.style.pointerEvents = 'auto';
+                btn.classList.add('bg-slate-900', 'text-white', 'hover:bg-slate-800');
+                icon.className = 'fa-solid fa-pencil text-yellow-300';
+                text.innerText = 'Draw Mode (Active)';
+                triggerToast('Scribble Mode Engaged: Use your cursor/finger as a dry-erase marker!');
+            } else {
+                canvas.style.pointerEvents = 'none';
+                btn.classList.remove('bg-slate-900', 'text-white', 'hover:bg-slate-800');
+                icon.className = 'fa-solid fa-pencil text-slate-500';
+                text.innerText = 'Draw Mode (Inactive)';
+                triggerToast('Interactive Mode Engaged: Scroll or toggle folder tabs freely.');
+            }
+        }
+
+        // Pick markers from ledge
+        function pickPen(color, width) {
+            markerColor = color;
+            markerWidth = width;
+
+            // Highlight chosen pen visually on board tray
+            document.querySelectorAll('.pen-marker').forEach(pen => pen.classList.remove('selected'));
+            if (color === '#0f172a') document.getElementById('pen-black').classList.add('selected');
+            if (color === '#2563eb') document.getElementById('pen-blue').classList.add('selected');
+            if (color === '#dc2626') document.getElementById('pen-red').classList.add('selected');
+            if (color === 'rgba(254, 240, 138, 0.45)') document.getElementById('pen-yellow').classList.add('selected');
+
+            // Force draw mode if user explicitly picks another dry-erase pen
+            if (!scribbleMode) {
+                toggleFeltPen();
+            }
+        }
+
+        // Wipe operations
+        function wipeWhiteboard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            triggerToast('Virtual whiteboard dry-erase drawings wiped clean.');
+        }
+
+        // Sketch canvas draw core engine
+        function startDraw(e) {
+            if (!scribbleMode) return;
+            drawing = true;
+            const rect = canvas.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+        }
+
+        function drawPath(e) {
+            if (!drawing || !scribbleMode) return;
+            const rect = canvas.getBoundingClientRect();
+            const currX = e.clientX - rect.left;
+            const currY = e.clientY - rect.top;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currX, currY);
+            ctx.strokeStyle = markerColor;
+            ctx.lineWidth = markerWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+
+            lastX = currX;
+            lastY = currY;
+        }
+
+        function endDraw() {
+            drawing = false;
+        }
+
+        // Add mobile touch integration to dry-erase board
+        function touchStartDraw(e) {
+            if (e.touches.length > 0) {
+                startDraw(e.touches[0]);
+            }
+        }
+
+        function touchMoveDraw(e) {
+            if (e.touches.length > 0) {
+                drawPath(e.touches[0]);
+                e.preventDefault(); // Lock touchscreen default scrolls during whiteboard draws
+            }
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', drawPath);
+        canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('mouseout', endDraw);
+
+        canvas.addEventListener('touchstart', touchStartDraw);
+        canvas.addEventListener('touchmove', touchMoveDraw, { passive: false });
+        canvas.addEventListener('touchend', endDraw);
+
+        // Custom animated status alert toasts (Bypassing block rules on alert/confirms)
+        function triggerToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const toastText = document.getElementById('toastMessage');
+            toastText.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        window.onload = function() {
+            renderScene();
+        }
+
+        // ================= GEMINI AI CHAT INTEGRATION =================
+        let chatHistory = [];
+        
+        function toggleAIChat() {
+            const panel = document.getElementById('aiChatPanel');
+            panel.classList.toggle('active');
+            // Allow clicking inside panel when active
+            if(panel.classList.contains('active')) {
+                panel.style.pointerEvents = 'auto';
+                document.getElementById('aiChatInput').focus();
+            } else {
+                panel.style.pointerEvents = 'none';
+            }
+        }
+
+        function handleChatEnter(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function sendChatMessage() {
+            const inputEl = document.getElementById('aiChatInput');
+            const message = inputEl.value.trim();
+            if (!message) return;
+
+            // 1. Add User message to UI
+            appendMessage(message, 'user');
+            inputEl.value = '';
+            
+            // 2. Add Loading indicator to UI
+            const loadingId = appendLoading();
+            
+            // 3. Update internal chat history context
+            chatHistory.push({ role: "user", parts: [{ text: message }] });
+
+            // 4. Call Gemini API
+            try {
+                const responseText = await callGeminiAPI(chatHistory);
+                
+                // 5. Remove loading & Add AI message to UI
+                removeElement(loadingId);
+                appendMessage(responseText, 'model');
+                
+                // 6. Save AI response to history
+                chatHistory.push({ role: "model", parts: [{ text: responseText }] });
+                
+            } catch (error) {
+                console.error("AI Error:", error);
+                removeElement(loadingId);
+                appendMessage("Sorry, I'm having trouble connecting right now. Please try again later.", 'error');
+                // Remove the last user message from history so they can retry
+                chatHistory.pop();
+            }
+        }
+
+        function appendMessage(text, sender) {
+            const historyEl = document.getElementById('aiChatHistory');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `p-2.5 max-w-[85%] shadow-sm ai-message text-slate-700 leading-snug rounded-lg ${
+                sender === 'user' 
+                ? 'self-end bg-indigo-100 border border-indigo-200 rounded-tr-none' 
+                : sender === 'error'
+                ? 'self-start bg-rose-50 border border-rose-200 rounded-tl-none text-rose-700'
+                : 'self-start bg-white border border-slate-200 rounded-tl-none'
+            }`;
+            msgDiv.innerText = text;
+            historyEl.appendChild(msgDiv);
+            historyEl.scrollTop = historyEl.scrollHeight;
+        }
+
+        function appendLoading() {
+            const historyEl = document.getElementById('aiChatHistory');
+            const id = 'loading-' + Date.now();
+            const msgDiv = document.createElement('div');
+            msgDiv.id = id;
+            msgDiv.className = `self-start bg-white border border-slate-200 rounded-lg rounded-tl-none p-2.5 max-w-[85%] shadow-sm ai-message text-slate-400 typing-indicator`;
+            msgDiv.innerHTML = `<span></span><span></span><span></span>`;
+            historyEl.appendChild(msgDiv);
+            historyEl.scrollTop = historyEl.scrollHeight;
+            return id;
+        }
+
+        function removeElement(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        if (response.status === 429) throw new Error("Rate limited");
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response;
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2; // Exponential backoff
+                }
+            }
+        }
+
+        async function callGeminiAPI(history) {
+            const apiKey = ""; // API key is populated automatically in the secure Canvas environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            
+            const systemPrompt = `You are the friendly, professional AI representative for Finnovative Consulting Private Limited (FCPL). 
+            Firm Overview: Integrated financial advisory for modern finance leaders based in New Delhi, India. Built by Big 4 trained Chartered Accountants.
+            Domains: 1) Consulting (Finance Transformation, Strategy Consulting, Risk & Controls). 2) Advisory (Taxation & FEMA, Transaction Advisory, Startup Advisory, ESG Advisory).
+            Founders: 
+            - CA Paras Vig (Transformation, Cross-Border, ESG)
+            - CA Nitin Jain (Direct/Indirect Tax, FEMA, Valuation)
+            - CA Karan Chopra (Finance Transformation, Technical Accounting, ERP)
+            - CA Sitin K. Jain (Internal Audit, Risk Advisory, Ind AS)
+            - Aditya Aggarwal (Accounting, Indian Taxation, Startups)
+            Keep answers concise (1-3 short paragraphs max), confident, and welcoming. Do not hallucinate external services. Direct highly specific inquiries to fcpl@fcplco.com or +91 99107 43612.`;
+
+            const payload = {
+                contents: history,
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
+            };
+
+            const response = await fetchWithRetry(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            const candidate = result.candidates?.[0];
+
+            if (candidate && candidate.content?.parts?.[0]?.text) {
+                return candidate.content.parts[0].text;
+            } else {
+                throw new Error("Invalid response structure from Gemini API");
+            }
+        }
+    </script>
+</body>
+</html>
